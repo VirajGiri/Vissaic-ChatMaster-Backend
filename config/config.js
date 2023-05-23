@@ -9,6 +9,6 @@ module.exports = {
     "secretKey":"yourSecretKey"*/
 
 	"database":'mongodb://localhost:27017/devchat',
-	"port":process.env.PORT || 21011,
+	"port":21011,
 	"secretKey":"yourSecretKey"
 }

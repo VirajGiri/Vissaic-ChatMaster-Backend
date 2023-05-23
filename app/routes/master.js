@@ -3,12 +3,14 @@ var Sticky = require('../models/sticky_notes');
 var logTime = require('../models/logInOutSession');
 var config = require('../../config/config');
 var jsonwebtoken = require('jsonwebtoken');
+var chatmaster = require('../models/chatMaster');
 var mailController = require('../controllers/mailController');
 const shortid = require('shortid');
 var secretKey = config.secretKey;
 var upload = require('express-fileupload');
 var fs = require("fs");
 var json2xls = require('json2xls');
+const { ObjectID } = require('mongodb');
 
 function createToken(user) {
     var token = jsonwebtoken.sign({
@@ -23,6 +25,39 @@ function createToken(user) {
 module.exports = function (app, express) {
 
     var api = express.Router();
+    console.log("Master called");
+    api.post('/add_messege', function (req, res) {
+
+        console.log("req.body",req.body);
+        var chat = new chatmaster({
+            currentuserId:req.body.currentuserId,
+            inUser:req.body.inUser,
+            outUser:req.body.outUser,
+            messege:req.body.messege,
+            type:req.body.type,
+        });
+        chat.save(function (err) {
+            if (err) {
+                res.send(err);
+                return;
+            }
+            res.json({
+                success: true,
+                message: "messege has been sent"
+            });
+        });
+
+    });
+    api.post('/get_messeges_by_userid', function (req, res) {
+        console.log("req.body.currentuserId",req.body.currentuserId);
+        chatmaster.find({currentuserId: ObjectID(req.body.currentuserId)}).exec(function (err, data) {
+            if (err) {
+                res.send(err);
+                return;
+            }
+            res.json(data);
+        });
+    });
 
     api.post('/add_user', function (req, res) {
 
@@ -60,6 +95,7 @@ module.exports = function (app, express) {
 
     });
     api.post('/login', function (req, res) {
+        console.log("H  ", req);
         User.findOne({
             username: req.body.username
         }).select('Name Role username password isActive').exec(function (err, user) {
@@ -258,7 +294,9 @@ module.exports = function (app, express) {
             });
         });
         
-      })
+      });
+
+     
     
 
   
